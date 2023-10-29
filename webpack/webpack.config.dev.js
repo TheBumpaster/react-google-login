@@ -8,7 +8,7 @@ module.exports = {
   mode: 'development',
   devtool: 'eval',
   entry: {
-    app: ['react-hot-loader/patch', 'webpack-dev-server/client?http://localhost:8080', 'webpack/hot/only-dev-server', './demo/index.js']
+    app: ['react-hot-loader/patch', 'webpack-dev-server/client?http://localhost:3000', 'webpack/hot/only-dev-server', './demo/index.js']
   },
   output: {
     path: path.join(fileRoot, 'demo'),
@@ -55,7 +55,7 @@ module.exports = {
     historyApiFallback: true,
     compress: false,
     host: process.env.IP || '0.0.0.0',
-    port: parseInt(process.env.PORT, 0) || 8080,
+    port: parseInt(process.env.PORT, 0) || 3000,
     hot: true,
     open: false,
     quiet: false,

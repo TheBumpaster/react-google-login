@@ -32,6 +32,7 @@ const useGoogleLogin = ({
 }) => {
   const [loaded, setLoaded] = useState(false)
 
+
   const handleSigninSuccess = function handleSigninSuccess(credentialResponse) {
     const credentialToken = credentialResponse.credential
 
@@ -52,7 +53,8 @@ const useGoogleLogin = ({
     }
 
     response.tokenObj = {
-      id_token: credentialToken
+      id_token: credentialToken,
+      access_token: credentialResponse.access_token
     }
 
     onSuccess(response)
@@ -65,7 +67,17 @@ const useGoogleLogin = ({
 
         itp_support: true,
 
-        callback: handleSigninSuccess
+        callback: (initresponse) => {
+          const client = window.google.accounts.oauth2.initTokenClient({
+            client_id: clientId,
+            scope,
+            itp_support: true,
+            callback: (tokenResponse) => {
+              handleSigninSuccess({credential: initresponse.credential, access_token: tokenResponse.access_token})
+            },
+          });
+          client.requestAccessToken();
+        }
       })
     } else {
       const initializeTimeout = setTimeout(() => {
@@ -83,15 +95,12 @@ const useGoogleLogin = ({
     }
 
     if (loaded) {
-      console.log('signIn -> loaded')
 
       window.google &&
         window.google.accounts &&
         window.google.accounts.id.prompt(notification => {
-          console.log('signIn -> prompt', notification, notification.getNotDisplayedReason(), notification.getSkippedReason())
-
+          
           if (notification.isNotDisplayed() && ['opt_out_or_no_session'].includes(notification.getNotDisplayedReason())) {
-            console.log('signIn -> opt_out')
 
             const client =
               window.google &&
@@ -101,7 +110,8 @@ const useGoogleLogin = ({
 
                 scope,
 
-                callback(tokenResponse) {
+                callback(res) {
+
                   window.google &&
                     window.google.accounts &&
                     window.google.accounts.id.initialize({
@@ -110,21 +120,23 @@ const useGoogleLogin = ({
                       itp_support: true,
                       auto_select: true,
 
-                      callback: handleSigninSuccess
+                      callback: (response) => {
+                        
+                        handleSigninSuccess(response)
+                      }
                     })
 
                   window.google && window.google.accounts && window.google.accounts.id.prompt()
                 }
               })
 
-            client.requestAccessToken()
+            client.requestAccessToken({ prompt })
+
           } else if (
             notification.isNotDisplayed() ||
             notification.isSkippedMoment() ||
             ['user_cancel', 'issuing_failed'].includes(notification.getSkippedReason())
           ) {
-            console.log('signIn -> not displayed')
-
             document.cookie = `g_state=;path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT`
 
             window.google && window.google.accounts && window.google.accounts.id.cancel()
@@ -134,7 +146,6 @@ const useGoogleLogin = ({
         })
     } else {
       const loadTimeout = setTimeout(() => {
-        console.log('signIn -> not loaded')
 
         signIn(event)
 
@@ -144,7 +155,6 @@ const useGoogleLogin = ({
   }
 
   useEffect(() => {
-    console.log('useEffect -> mount')
 
     let unmounted = false
     let initialize = false
@@ -165,16 +175,13 @@ const useGoogleLogin = ({
         initialize = true
 
         if (bypassed && !loaded) {
-          console.log('useEffect -> bypassed:loaded')
           initializeAccount()
 
           setLoaded(true)
         } else if (loaded) {
-          console.log('useEffect -> loaded')
           initializeAccount()
         } else {
           window.onload = () => {
-            console.log('useEffect -> onload')
             initializeAccount()
 
             setLoaded(true)
@@ -203,7 +210,6 @@ const useGoogleLogin = ({
 
       window.google && window.google.accounts && window.google.accounts.id.cancel()
 
-      console.log('useEffect -> unmount')
 
       removeScript(document, 'google-login')
     }

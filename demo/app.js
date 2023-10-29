@@ -3,7 +3,7 @@ import { GoogleLogout, GoogleLogin } from '../src/index'
 // import GoogleLogin, { GoogleLogout } from '../dist/google-login'
 // import FontAwesome from 'react-fontawesome';
 
-const clientId = '617246850621-95f9qhmehd380g2df86pjhrqc84n8nij.apps.googleusercontent.com'
+const clientId = '1012455791839-2inc2tr3l0vlmmeu7cfcml5q0ovrsfkp.apps.googleusercontent.com'
 
 const success = response => {
   console.log(response) // eslint-disable-line
@@ -33,6 +33,7 @@ const MountTest = () => {
         }}
         onFailure={error}
         clientId={clientId}
+        responseType={"token"}
       >
         Auth then Hide button
       </GoogleLogin>
